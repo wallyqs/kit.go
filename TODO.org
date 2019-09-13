@@ -1,0 +1,27 @@
+#+TITLE: NATS Kit Component
+
+*** Goals
+
+- Should allow safe registering lazily and connect
+
+- Allow middleware that can be used to replace encoders/decoders
+  on subs and hooks 
+
+- Should have best practices from NATS implemented
+
+- Should allow for more patterns
+  # 
+  # scatter/gather, collect call for example
+  # 
+
+- Should look into being able to have a logger
+  # 
+  # like tokio-trace
+  # 
+
+- Should have its own inbox for discovery of the component
+
+  # Create middleware with filters
+- Filters? Might be more correct? Closer to 
+
+- Services should support distributed cancellation
