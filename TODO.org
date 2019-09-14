@@ -25,3 +25,22 @@
 - Filters? Might be more correct? Closer to 
 
 - Services should support distributed cancellation
+
+******* example
+
+#+BEGIN_SRC go
+func NRWrapper(fn nats.PublishFunc) nats.PublishFunc {
+    return func(nc *nats.Conn, ctx context.Context, subj, reply string, data []byte) error {
+        if txn := newrelic.FromContext(ctx); nil != txn {
+            seg := newrelic.ExternalSegment{
+                StartTime: newrelic.StartSegmentNow(txn),
+                URL:       nc.ConnectedUrl(),
+                Procedure: "Publish/" + subj,
+                Library:   "NATS",
+            }   
+            defer seg.End()
+        }   
+        return fn(nc, ctx, subj, reply, data)
+    }   
+}
+#+END_SRC

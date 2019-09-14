@@ -12,14 +12,34 @@ type Stream struct {
 	sub     *nats.Subscription
 	comp    *Component
 	cb      nats.MsgHandler
+
+	// TODO: Something about a context?
+	// should this be an interface?
+	pubfilters []func([]byte)[]byte
+}
+
+func (stream *Stream) Component() *Component {
+	return stream.comp
+}
+
+func (stream *Stream) PublishFilter(cb func([]byte) []byte) {
+	stream.pubfilters = append(stream.pubfilters, cb)
 }
 
 // Publish...
 func (stream *Stream) Publish(payload []byte) error {
 	//
+	//
 	// TODO: Apply the callbacks...
 	//
-	return stream.nc.Publish(stream.subject, payload)
+	//
+	// Transform the publish by applying the filters.
+	//
+	for _, pf := range stream.pubfilters {
+		payload = pf(payload)
+	}
+
+	return stream.comp.Publish(stream.subject, payload)
 }
 
 // Subscribe...
@@ -51,9 +71,10 @@ func (stream *Stream) Subscribe(cb nats.MsgHandler) error {
 func (c *Component) Stream(subj string) *Stream {
 	// Pick the cbs that will be executed from this event.
 	return &Stream{
-		subject: subj,
-		hooks:   make([]func(), 0),
-		nc:      c.nc,
-		comp:    c,
+		subject:    subj,
+		hooks:      make([]func(), 0),
+		nc:         c.nc,
+		comp:       c,
+		pubfilters: make([]func(data []byte)[]byte, 0),
 	}
 }
